@@ -1,0 +1,136 @@
+{
+  "name": "Google Sheet Expense Report Emailer",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d747a702-a5b6-4028-be9f-e22a3351e534",
+      "name": "Run Report",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1D_tCo6m0E9eCL7UMIhJLef32XaLrfy5MCJWBIvM4DCc"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Sheet1"
+        },
+        "options": {}
+      },
+      "id": "c9adeab6-980d-4090-b754-906c1c860e61",
+      "name": "Read Expense Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        304
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PKyT1bceoF2vH6b5",
+          "name": "n8nsheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "800d7511-04e8-4fe3-9918-6df2b9e753bd",
+      "name": "Send Expense Report Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        304
+      ],
+      "webhookId": "cf441f18-92a5-4d6e-9901-4e7e6cf0527a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "iIPLLzLWbnRVQVM3",
+          "name": "n8ngenai"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const j = $json;\nif (!j.Email) {\n  return null;\n}\nconst amount = Number(j.Amount) || 0;\nconst subject = \"Your Expense Report Entry - \" + j.Category + \" (\" + j.Date + \")\";\nconst body = \"Hi \" + (j.Employee || \"there\") + \",\\n\\nHere is your expense report entry from the sheet:\\n\\n- Date: \" + j.Date + \"\\n- Category: \" + j.Category + \"\\n- Description: \" + j.Description + \"\\n- Amount: Rs.\" + amount + \"\\n- Status: \" + j.Status + \"\\n\\nRegards,\\nJagan\";\nreturn { json: { subject: subject, body: body, email: j.Email } };"
+      },
+      "id": "3b8241d5-e9d5-48e1-88ee-e6c430900a9b",
+      "name": "Build Email Per Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run Report": {
+      "main": [
+        [
+          {
+            "node": "Read Expense Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Expense Rows": {
+      "main": [
+        [
+          {
+            "node": "Build Email Per Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Email Per Row": {
+      "main": [
+        [
+          {
+            "node": "Send Expense Report Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "37fb7b57-2e01-48bb-a0b8-a73aa04d101a",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "9b91639fad8091d80ec8c66e2973d6d94c9bb01ebbe97b4ea90b68c892a0644f"
+  },
+  "nodeGroups": [],
+  "id": "2s99Gq2bTOd8GHRO",
+  "tags": []
+}
